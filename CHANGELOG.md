@@ -1,5 +1,5 @@
 ## [Unreleased]
 
-## [0.1.0] - 2025-11-23
+## [0.0.1.pre] - 2025-11-23
 
-- Initial release
+- Initial pre-release to reserve gem name
