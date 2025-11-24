@@ -97,7 +97,7 @@ class DragonRubyBinary
     when Net::HTTPSuccess
       response
     else
-      raise "Failed to get #{url}: #{response.code}"
+      raise "Failed to get #{url}: #{response.code} #{response.message}\n#{response.body}"
     end
   end
 end
