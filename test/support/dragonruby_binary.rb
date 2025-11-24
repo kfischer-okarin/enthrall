@@ -24,6 +24,10 @@ class DragonRubyBinary
     download_and_extract(version: version, license: license)
   end
 
+  def start_game(game_dir)
+    GameProcess.new(binary_path: path, game_dir: game_dir)
+  end
+
   private
 
   def fetch_latest_version
