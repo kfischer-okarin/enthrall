@@ -1,8 +1,6 @@
 require "fileutils"
 
 class GameProcess
-  attr_reader :stdout_log, :stderr_log
-
   def initialize(binary_path:, game_dir:)
     @binary_path = binary_path
     @game_dir = game_dir
@@ -53,6 +51,7 @@ class GameProcess
   end
 
   def start
+    # Ensure to run headless on CI
     env = ci_environment? ? {"SDL_VIDEODRIVER" => "dummy", "SDL_AUDIODRIVER" => "dummy"} : {}
 
     # Run from the DragonRuby directory so it finds mygame

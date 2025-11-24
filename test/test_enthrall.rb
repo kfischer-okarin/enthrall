@@ -15,8 +15,8 @@ class TestEnthrall < Minitest::Test
     sleep 0.5 # Give it a moment to start
 
     # Check that we can read logs
-    refute_nil game_process.stdout_log
-    refute_nil game_process.stderr_log
+    refute_nil game_process.stdout
+    refute_nil game_process.stderr
 
     game_process.kill
   end
