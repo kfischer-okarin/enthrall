@@ -12,4 +12,7 @@ gem "minitest", "~> 5.16"
 
 gem "standard", "~> 1.3"
 
+# To unzip DragonRuby in the tests
 gem "rubyzip", "~> 3.2"
+# To avoid SSL while downloading DragonRuby for tests
+gem "openssl", "~> 3.3"

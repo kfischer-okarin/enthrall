@@ -89,19 +89,15 @@ class DragonRubyBinary
 
   def http_get(url)
     uri = URI(url)
+    response = Net::HTTP.get_response(uri)
 
-    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
-      request = Net::HTTP::Get.new(uri)
-      response = http.request(request)
-
-      case response
-      when Net::HTTPRedirection
-        return http_get(response["location"])
-      when Net::HTTPSuccess
-        return response
-      else
-        raise "Failed to get #{url}: #{response.code}"
-      end
+    case response
+    when Net::HTTPRedirection
+      http_get(response["location"])
+    when Net::HTTPSuccess
+      response
+    else
+      raise "Failed to get #{url}: #{response.code}"
     end
   end
 end
