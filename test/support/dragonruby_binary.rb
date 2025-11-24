@@ -46,7 +46,7 @@ class DragonRubyBinary
 
     extract_binary(temp_zip)
 
-    FileUtils.rm(temp_zip)
+    FileUtils.rm_f(temp_zip)
 
     puts "DragonRuby binary ready at #{path}"
   end
