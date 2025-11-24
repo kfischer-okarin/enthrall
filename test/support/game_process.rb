@@ -16,10 +16,11 @@ class GameProcess
   def kill
     return unless @pid
 
-    Process.kill("TERM", @pid)
+    signal = windows? ? "KILL" : "TERM"
+    Process.kill(signal, @pid)
     Process.wait(@pid)
-  rescue Errno::ESRCH, Errno::ECHILD
-    # Process already dead
+  rescue Errno::ESRCH, Errno::ECHILD, Errno::EINVAL
+    # Process already dead or invalid on Windows
   ensure
     @pid = nil
   end
@@ -62,5 +63,9 @@ class GameProcess
 
   def ci_environment?
     ENV["CI"] == "true"
+  end
+
+  def windows?
+    RUBY_PLATFORM.match?(/mingw|mswin/)
   end
 end
