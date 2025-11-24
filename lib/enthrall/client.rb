@@ -16,7 +16,7 @@ module Enthrall
 
       raise "Failed to eval: #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
-      JSON.parse(response.body)
+      eval(response.body) rescue response.body
     end
   end
 end
