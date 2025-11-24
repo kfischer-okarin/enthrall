@@ -31,10 +31,16 @@ class DragonRubyBinary
   private
 
   def fetch_latest_version
-    response = http_get("https://api.github.com/repos/#{BINARY_REPOSITORY}/releases/latest")
+    response = http_get("https://api.github.com/repos/#{BINARY_REPOSITORY}/releases/latest", headers: github_headers)
 
     data = JSON.parse(response.body)
     data["tag_name"]
+  end
+
+  def github_headers
+    headers = {}
+    headers["Authorization"] = "Bearer #{ENV["GITHUB_TOKEN"]}" if ENV["GITHUB_TOKEN"]
+    headers
   end
 
   def download_and_extract(version:, license:)
@@ -91,17 +97,23 @@ class DragonRubyBinary
     FileUtils.chmod(0o755, path) unless platform.include?("windows")
   end
 
-  def http_get(url)
+  def http_get(url, headers: {})
     uri = URI(url)
-    response = Net::HTTP.get_response(uri)
 
-    case response
-    when Net::HTTPRedirection
-      http_get(response["location"])
-    when Net::HTTPSuccess
-      response
-    else
-      raise "Failed to get #{url}: #{response.code} #{response.message}\n#{response.body}"
+    Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https") do |http|
+      request = Net::HTTP::Get.new(uri)
+      headers.each { |key, value| request[key] = value }
+
+      response = http.request(request)
+
+      case response
+      when Net::HTTPRedirection
+        http_get(response["location"], headers: headers)
+      when Net::HTTPSuccess
+        response
+      else
+        raise "Failed to get #{url}: #{response.code} #{response.message}\n#{response.body}"
+      end
     end
   end
 end
