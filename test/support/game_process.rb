@@ -1,4 +1,6 @@
 require "fileutils"
+require "net/http"
+require "timeout"
 
 class GameProcess
   def initialize(binary_path:, game_dir:)
@@ -58,6 +60,21 @@ class GameProcess
     Dir.chdir(File.dirname(@binary_path)) do
       @pid = Process.spawn(env, @binary_path, out: @stdout_log, err: @stderr_log)
     end
+
+    wait_for_endpoint
+  end
+
+  def wait_for_endpoint(host: "localhost", port: 9001, timeout: 10)
+    Timeout.timeout(timeout) do
+      loop do
+        Net::HTTP.get_response(URI("http://#{host}:#{port}/dragon/eval/"))
+        break
+      rescue Errno::ECONNREFUSED, Errno::EADDRNOTAVAIL, SocketError
+        sleep 0.1
+      end
+    end
+  rescue Timeout::Error
+    raise "DragonRuby eval endpoint did not become available within #{timeout} seconds"
   end
 
   def ci_environment?
