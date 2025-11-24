@@ -58,7 +58,8 @@ class GameProcess
 
     # Run from the DragonRuby directory so it finds mygame
     Dir.chdir(File.dirname(@binary_path)) do
-      @pid = Process.spawn(env, @binary_path, out: @stdout_log, err: @stderr_log)
+      command = [@binary_path, 'mygame', '--set', 'webserver.enabled', 'true']
+      @pid = Process.spawn(env, *command, out: @stdout_log, err: @stderr_log)
     end
 
     wait_for_endpoint
