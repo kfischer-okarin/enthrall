@@ -5,4 +5,5 @@ require_relative "enthrall/version"
 
 module Enthrall
   class Error < StandardError; end
+  class TimeoutError < Error; end
 end

@@ -95,6 +95,19 @@ module Enthrall
       eval_ruby("$gtk.tadpole.click(#{x}, #{y}, button: #{button_id})")
     end
 
+    def wait_until(expression, timeout: 10, interval: 0.1)
+      start_time = Time.now
+      loop do
+        result = eval_ruby(expression)
+        return result if result
+
+        elapsed = Time.now - start_time
+        raise Enthrall::TimeoutError, "Timed out after #{timeout}s waiting for: #{expression}" if elapsed >= timeout
+
+        sleep interval
+      end
+    end
+
     private
 
     def inject_tadpole

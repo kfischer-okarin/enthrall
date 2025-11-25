@@ -28,13 +28,21 @@ class TestClient < Minitest::Test
 
   def test_click_simulates_mouse_click_at_position
     @client.click(100, 200)
-    sleep 0.2 # Wait for click cycle to complete (mouse_up at tick+7)
+    @client.wait_until("$args.state.last_click")
 
     # Verify click was registered in game state
-    x = @client.eval_ruby("$args.state.last_click&.x")
-    y = @client.eval_ruby("$args.state.last_click&.y")
+    x = @client.eval_ruby("$args.state.last_click.x")
+    y = @client.eval_ruby("$args.state.last_click.y")
 
     assert_equal 100, x
     assert_equal 200, y
+  end
+
+  def test_wait_until_raises_on_timeout
+    error = assert_raises(Enthrall::TimeoutError) do
+      @client.wait_until("false", timeout: 0.5)
+    end
+
+    assert_match(/timed out/i, error.message)
   end
 end
