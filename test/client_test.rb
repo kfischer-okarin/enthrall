@@ -25,4 +25,16 @@ class TestClient < Minitest::Test
     assert_kind_of Integer, result
     assert result >= 0
   end
+
+  def test_click_simulates_mouse_click_at_position
+    @client.click(100, 200)
+    sleep 0.2 # Wait for click cycle to complete (mouse_up at tick+7)
+
+    # Verify click was registered in game state
+    x = @client.eval_ruby("$args.state.last_click&.x")
+    y = @client.eval_ruby("$args.state.last_click&.y")
+
+    assert_equal 100, x
+    assert_equal 200, y
+  end
 end
