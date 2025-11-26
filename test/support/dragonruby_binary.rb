@@ -24,9 +24,9 @@ class DragonRubyBinary
     download_and_extract(version: version, license: license)
   end
 
-  def start_game_fixture(fixture_name)
+  def start_game_fixture(fixture_name, log_file_name: nil)
     game_dir = File.join("test", "fixtures", fixture_name)
-    GameProcess.new(binary_path: path, game_dir: game_dir)
+    GameProcess.new(binary_path: path, game_dir: game_dir, log_file_name: log_file_name)
   end
 
   private

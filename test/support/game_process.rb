@@ -3,9 +3,10 @@ require "net/http"
 require "timeout"
 
 class GameProcess
-  def initialize(binary_path:, game_dir:)
+  def initialize(binary_path:, game_dir:, log_file_name: nil)
     @binary_path = binary_path
     @game_dir = game_dir
+    @log_file_name = log_file_name
     @mygame_path = File.join(File.dirname(@binary_path), "mygame")
     @pid = nil
     setup_game_folder
@@ -47,9 +48,9 @@ class GameProcess
     log_dir = File.join(Dir.pwd, "tmp", "logs")
     FileUtils.mkdir_p(log_dir)
 
-    timestamp = Time.now.strftime("%Y%m%d_%H%M%S_%L")
-    @stdout_log = File.join(log_dir, "dragonruby_#{timestamp}.out")
-    @stderr_log = File.join(log_dir, "dragonruby_#{timestamp}.err")
+    log_name = @log_file_name || Time.now.strftime("%Y%m%d_%H%M%S_%L")
+    @stdout_log = File.join(log_dir, "#{log_name}.out")
+    @stderr_log = File.join(log_dir, "#{log_name}.err")
   end
 
   def start

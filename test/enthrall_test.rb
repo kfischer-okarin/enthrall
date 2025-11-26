@@ -2,14 +2,14 @@
 
 require "test_helper"
 
-class TestEnthrall < Minitest::Test
+class TestEnthrall < EnthrallTestCase
   def test_that_it_has_a_version_number
     refute_nil ::Enthrall::VERSION
   end
 
   def test_start_and_stop_dragonruby_process
     binary = DragonRubyBinary.new
-    game_process = binary.start_game_fixture("simple_game")
+    game_process = binary.start_game_fixture("simple_game", log_file_name: log_file_name)
 
     assert_instance_of GameProcess, game_process
     sleep 0.5 # Give it a moment to start

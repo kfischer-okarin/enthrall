@@ -2,7 +2,7 @@
 
 require "test_helper"
 
-class TestClient < Minitest::Test
+class TestClient < EnthrallTestCase
   def test_eval_ruby_returns_simple_expression_result
     with_fixture("simple_game") do |client|
       result = client.eval_ruby("1 + 1")
@@ -148,16 +148,5 @@ class TestClient < Minitest::Test
       # Event fires at: returned_tick + delay + 2 (schedule offset + detection delay)
       assert_equal press_result[:tick] + 10 + 2, a_down[:tick]
     end
-  end
-
-  private
-
-  def with_fixture(fixture_name)
-    binary = DragonRubyBinary.new
-    game_process = binary.start_game_fixture(fixture_name)
-    client = Enthrall::Client.new
-    yield client
-  ensure
-    game_process.kill
   end
 end
