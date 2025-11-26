@@ -29,15 +29,15 @@ module Enthrall
       end
     end
 
-    def click(x, y, button: :left)
+    def click(x, y, button: :left, delay: 0)
       button_id = MOUSE_BUTTONS[button]
       raise ArgumentError, "Invalid button: #{button.inspect}. Use :left, :middle, or :right" unless button_id
 
       inject_tadpole
-      eval_ruby("$gtk.tadpole.click(#{x}, #{y}, button: #{button_id})")
+      eval_ruby("$gtk.tadpole.click(#{x}, #{y}, button: #{button_id}, delay: #{delay})")
     end
 
-    def press_key(*modifiers_and_key)
+    def press_key(*modifiers_and_key, delay: 0)
       raise ArgumentError, "press_key requires at least one argument (key)" if modifiers_and_key.empty?
 
       # Normalize all arguments to symbols (accept both 'a' and :a)
@@ -54,7 +54,7 @@ module Enthrall
       end
 
       inject_tadpole
-      eval_ruby("$gtk.tadpole.press_key(:#{key}, #{modifiers.inspect})")
+      eval_ruby("$gtk.tadpole.press_key(:#{key}, #{modifiers.inspect}, delay: #{delay})")
     end
 
     def wait_until(expression, timeout: 10, interval: 0.1)

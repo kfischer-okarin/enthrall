@@ -108,6 +108,48 @@ class TestClient < Minitest::Test
     end
   end
 
+  def test_click_returns_tick
+    with_fixture("mouse_test") do |client|
+      result = client.click(100, 200)
+
+      assert result[:tick] >= 0
+    end
+  end
+
+  def test_click_with_delay
+    with_fixture("mouse_test") do |client|
+      click_result = client.click(100, 200, button: :left, delay: 10)
+      client.wait_until("$args.state.timed_mouse_events.length >= 2")
+
+      events = client.eval_ruby("$args.state.timed_mouse_events")
+      left_click = events.find { |e| e[:event] == :left_click }
+
+      # Event fires at: returned_tick + delay + 2 (schedule offset + detection delay)
+      assert_equal click_result[:tick] + 10 + 2, left_click[:tick]
+    end
+  end
+
+  def test_press_key_returns_tick
+    with_fixture("keyboard_test") do |client|
+      result = client.press_key(:a)
+
+      assert result[:tick] >= 0
+    end
+  end
+
+  def test_press_key_with_delay
+    with_fixture("keyboard_test") do |client|
+      press_result = client.press_key(:a, delay: 10)
+      client.wait_until("$args.state.timed_key_events.length >= 2")
+
+      events = client.eval_ruby("$args.state.timed_key_events")
+      a_down = events.find { |e| e[:event] == :a_down }
+
+      # Event fires at: returned_tick + delay + 2 (schedule offset + detection delay)
+      assert_equal press_result[:tick] + 10 + 2, a_down[:tick]
+    end
+  end
+
   private
 
   def with_fixture(fixture_name)

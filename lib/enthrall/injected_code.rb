@@ -55,34 +55,35 @@ module Enthrall
               @input_queue = {}
             end
 
-            def click(x, y, button:)
+            def click(x, y, button:, delay: 0)
               current_tick = $gtk.args.state.tick_count
               # Flip y coordinate: DragonRuby has y=0 at bottom, SDL has y=0 at top
               screen_y = 720 - y
-              puts "[Tadpole] click(#{x}, #{y}) -> screen(#{x}, #{screen_y}) scheduled at tick #{current_tick}"
-              # Mouse down next tick
-              schedule_input(current_tick + 1) do
+              puts "[Tadpole] click(#{x}, #{y}) -> screen(#{x}, #{screen_y}) scheduled at tick #{current_tick} with delay #{delay}"
+              # Mouse down next tick (plus delay)
+              schedule_input(current_tick + delay + 1) do
                 puts "[Tadpole] mouse_move(#{x}, #{screen_y}) + mouse_button_pressed(#{button})"
                 $gtk.send :mouse_move, x, screen_y
                 $gtk.send :mouse_button_pressed, button
               end
               # Mouse up 6 ticks later
-              schedule_input(current_tick + 7) do
+              schedule_input(current_tick + delay + 7) do
                 puts "[Tadpole] mouse_button_up(#{button})"
                 $gtk.send :mouse_button_up, button
               end
+              {tick: current_tick}
             end
 
-            def press_key(key, modifiers)
+            def press_key(key, modifiers, delay: 0)
               current_tick = $gtk.args.state.tick_count
               keycode = KEYCODES[key]
               scancode = SCANCODES[key]
               flags = modifiers.map { |m| MODIFIER_FLAGS[m] || 0 }.reduce(0, :|)
 
-              puts "[Tadpole] press_key(#{key}, modifiers: #{modifiers}) scheduled at tick #{current_tick}"
+              puts "[Tadpole] press_key(#{key}, modifiers: #{modifiers}) scheduled at tick #{current_tick} with delay #{delay}"
 
               # Key down at tick+1 (with modifiers pressed first)
-              schedule_input(current_tick + 1) do
+              schedule_input(current_tick + delay + 1) do
                 # Press modifier keys first
                 modifiers.each do |mod|
                   mod_keycode = KEYCODES[mod]
@@ -96,7 +97,7 @@ module Enthrall
               end
 
               # Key up at tick+7 (release main key then modifiers)
-              schedule_input(current_tick + 7) do
+              schedule_input(current_tick + delay + 7) do
                 $gtk.send :key_up_raw, keycode, flags if keycode
                 $gtk.send :scancode_up_raw, scancode, flags if scancode
                 # Release modifiers
@@ -107,6 +108,7 @@ module Enthrall
                   $gtk.send :scancode_up_raw, mod_scancode, 0 if mod_scancode
                 end
               end
+              {tick: current_tick}
             end
 
             def process_tick
