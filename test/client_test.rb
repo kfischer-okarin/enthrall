@@ -63,6 +63,51 @@ class TestClient < Minitest::Test
     end
   end
 
+  def test_press_key_simple
+    with_fixture("keyboard_test") do |client|
+      client.press_key(:a)
+      client.wait_until("$args.state.detected_key_events.length >= 2")
+
+      events = client.eval_ruby("$args.state.detected_key_events.to_a")
+
+      assert_equal [:a_down, :a_up], events
+    end
+  end
+
+  def test_press_key_with_string
+    with_fixture("keyboard_test") do |client|
+      client.press_key("space")
+      client.wait_until("$args.state.detected_key_events.length >= 2")
+
+      events = client.eval_ruby("$args.state.detected_key_events.to_a")
+
+      assert_equal [:space_down, :space_up], events
+    end
+  end
+
+  def test_press_key_with_modifier
+    with_fixture("keyboard_test") do |client|
+      client.press_key(:shift, :a)
+      client.wait_until("$args.state.detected_key_events.length >= 4")
+
+      events = client.eval_ruby("$args.state.detected_key_events.to_a")
+
+      # Detection order depends on fixture's check order (keys before modifiers)
+      assert_equal [:a_down, :shift_down, :a_up, :shift_up], events
+    end
+  end
+
+  def test_press_key_f_key
+    with_fixture("keyboard_test") do |client|
+      client.press_key(:f1)
+      client.wait_until("$args.state.detected_key_events.length >= 2")
+
+      events = client.eval_ruby("$args.state.detected_key_events.to_a")
+
+      assert_equal [:f1_down, :f1_up], events
+    end
+  end
+
   private
 
   def with_fixture(fixture_name)
