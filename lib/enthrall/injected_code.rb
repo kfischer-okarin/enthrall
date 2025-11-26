@@ -61,13 +61,13 @@ module Enthrall
               screen_y = 720 - y
               puts "[Tadpole] click(#{x}, #{y}) -> screen(#{x}, #{screen_y}) scheduled at tick #{current_tick} with delay #{delay}"
               # Mouse down next tick (plus delay)
-              schedule_input(current_tick + delay + 1) do
+              schedule_callback_in(delay + 1) do
                 puts "[Tadpole] mouse_move(#{x}, #{screen_y}) + mouse_button_pressed(#{button})"
                 $gtk.send :mouse_move, x, screen_y
                 $gtk.send :mouse_button_pressed, button
               end
               # Mouse up 6 ticks later
-              schedule_input(current_tick + delay + 7) do
+              schedule_callback_in(delay + 7) do
                 puts "[Tadpole] mouse_button_up(#{button})"
                 $gtk.send :mouse_button_up, button
               end
@@ -83,7 +83,7 @@ module Enthrall
               puts "[Tadpole] press_key(#{key}, modifiers: #{modifiers}) scheduled at tick #{current_tick} with delay #{delay}"
 
               # Key down at tick+1 (with modifiers pressed first)
-              schedule_input(current_tick + delay + 1) do
+              schedule_callback_in(delay + 1) do
                 # Press modifier keys first
                 modifiers.each do |mod|
                   mod_keycode = KEYCODES[mod]
@@ -97,7 +97,7 @@ module Enthrall
               end
 
               # Key up at tick+7 (release main key then modifiers)
-              schedule_input(current_tick + delay + 7) do
+              schedule_callback_in(delay + 7) do
                 $gtk.send :key_up_raw, keycode, flags if keycode
                 $gtk.send :scancode_up_raw, scancode, flags if scancode
                 # Release modifiers
@@ -122,9 +122,10 @@ module Enthrall
 
             private
 
-            def schedule_input(tick, &block)
-              @input_queue[tick] ||= []
-              @input_queue[tick] << block
+            def schedule_callback_in(ticks, &block)
+              target_tick = $gtk.args.state.tick_count + ticks
+              @input_queue[target_tick] ||= []
+              @input_queue[target_tick] << block
             end
           end
         end
