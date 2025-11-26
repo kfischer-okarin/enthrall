@@ -59,16 +59,17 @@ module Enthrall
               current_tick = $gtk.args.state.tick_count
               # Flip y coordinate: DragonRuby has y=0 at bottom, SDL has y=0 at top
               screen_y = 720 - y
-              puts "[Tadpole] click(#{x}, #{y}) -> screen(#{x}, #{screen_y}) scheduled at tick #{current_tick} with delay #{delay}"
+              log_received_command "click(#{x}, #{y}, button: #{button}, delay: #{delay})"
               # Mouse down next tick (plus delay)
               schedule_callback_in(delay + 1) do
-                puts "[Tadpole] mouse_move(#{x}, #{screen_y}) + mouse_button_pressed(#{button})"
+                log_injected_input  "mouse_move(#{x}, #{screen_y})"
                 $gtk.send :mouse_move, x, screen_y
+                log_injected_input "mouse_button_pressed(#{button})"
                 $gtk.send :mouse_button_pressed, button
               end
               # Mouse up 6 ticks later
               schedule_callback_in(delay + 7) do
-                puts "[Tadpole] mouse_button_up(#{button})"
+                log_injected_input "mouse_button_up(#{button})"
                 $gtk.send :mouse_button_up, button
               end
               {tick: current_tick}
@@ -80,7 +81,7 @@ module Enthrall
               scancode = SCANCODES[key]
               flags = modifiers.map { |m| MODIFIER_FLAGS[m] || 0 }.reduce(0, :|)
 
-              puts "[Tadpole] press_key(#{key}, modifiers: #{modifiers}) scheduled at tick #{current_tick} with delay #{delay}"
+              log_injected_input "press_key(#{key}, modifiers: #{modifiers}, delay: #{delay})"
 
               # Key down at tick+1 (with modifiers pressed first)
               schedule_callback_in(delay + 1) do
@@ -88,23 +89,32 @@ module Enthrall
                 modifiers.each do |mod|
                   mod_keycode = KEYCODES[mod]
                   mod_scancode = SCANCODES[mod]
+                  log_injected_input "key_down_raw(#{mod_keycode}, 0)"
                   $gtk.send :key_down_raw, mod_keycode, 0 if mod_keycode
+                  log_injected_input "scancode_down_raw(#{mod_scancode}, 0)"
                   $gtk.send :scancode_down_raw, mod_scancode, 0 if mod_scancode
                 end
+
                 # Then press main key with modifier flags
+                log_injected_input "key_down_raw(#{keycode}, #{flags})"
                 $gtk.send :key_down_raw, keycode, flags if keycode
+                log_injected_input "scancode_down_raw(#{scancode}, #{flags})"
                 $gtk.send :scancode_down_raw, scancode, flags if scancode
               end
 
               # Key up at tick+7 (release main key then modifiers)
               schedule_callback_in(delay + 7) do
+                log_injected_input "key_up_raw(#{keycode}, #{flags})"
                 $gtk.send :key_up_raw, keycode, flags if keycode
+                log_injected_input "scancode_up_raw(#{scancode}, #{flags})"
                 $gtk.send :scancode_up_raw, scancode, flags if scancode
                 # Release modifiers
                 modifiers.each do |mod|
                   mod_keycode = KEYCODES[mod]
                   mod_scancode = SCANCODES[mod]
+                  log_injected_input "key_up_raw(#{mod_keycode}, 0)"
                   $gtk.send :key_up_raw, mod_keycode, 0 if mod_keycode
+                  log_injected_input "scancode_up_raw(#{mod_scancode}, 0)"
                   $gtk.send :scancode_up_raw, mod_scancode, 0 if mod_scancode
                 end
               end
@@ -114,7 +124,6 @@ module Enthrall
             def process_tick
               current_tick = $gtk.args.state.tick_count
               if @input_queue[current_tick]
-                puts "[Tadpole] process_tick #{current_tick}, #{@input_queue[current_tick].size} actions"
                 @input_queue[current_tick].each(&:call)
                 @input_queue.delete(current_tick)
               end
@@ -126,6 +135,14 @@ module Enthrall
               target_tick = $gtk.args.state.tick_count + ticks
               @input_queue[target_tick] ||= []
               @input_queue[target_tick] << block
+            end
+
+            def log_received_command(message)
+              log_info "A tremor ripples through the tadpole's nerves: #{message} (#{Kernel.global_tick_count})"
+            end
+
+            def log_injected_input(message)
+              log_info "The tadpole flexes its will over the host: #{message} (#{Kernel.global_tick_count})"
             end
           end
         end
