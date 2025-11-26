@@ -34,3 +34,10 @@ jobs:
         run: bundle exec rake
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload logs on failure
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-logs-${{ matrix.os }}-ruby${{ matrix.ruby }}
+          path: tmp/logs/
+          retention-days: 7
