@@ -5,7 +5,7 @@ require "net/http"
 
 module Enthrall
   class Client
-    MOUSE_BUTTONS = {left: 1, middle: 2, right: 3}.freeze
+    MOUSE_BUTTONS = [:left, :middle, :right].freeze
     MODIFIERS = [:shift, :control, :alt, :meta].freeze
 
     def initialize(host: "localhost", port: 9001)
@@ -34,11 +34,12 @@ module Enthrall
     end
 
     def click(x, y, button: :left, delay: 0)
-      button_id = MOUSE_BUTTONS[button]
-      raise ArgumentError, "Invalid button: #{button.inspect}. Use :left, :middle, or :right" unless button_id
+      unless MOUSE_BUTTONS.include?(button)
+        raise ArgumentError, "Invalid button: #{button.inspect}. Use :left, :middle, or :right"
+      end
 
       inject_tadpole
-      eval_ruby("$gtk.tadpole.click(#{x}, #{y}, button: #{button_id}, delay: #{delay})")
+      eval_ruby("$gtk.tadpole.click(#{x}, #{y}, button: :#{button}, delay: #{delay})")
     end
 
     def press_key(*modifiers_and_key, delay: 0)

@@ -51,12 +51,15 @@ module Enthrall
               shift: 1, control: 64, alt: 256, meta: 1024,
             }.freeze
 
+            MOUSE_BUTTONS = {left: 1, middle: 2, right: 3}.freeze
+
             def initialize
               @input_queue = {}
             end
 
             def click(x, y, button:, delay: 0)
               current_tick = $gtk.args.state.tick_count
+              button_id = MOUSE_BUTTONS[button]
               # Flip y coordinate: DragonRuby has y=0 at bottom, SDL has y=0 at top
               screen_y = 720 - y
               log_received_command "click(#{x}, #{y}, button: #{button}, delay: #{delay})"
@@ -64,13 +67,13 @@ module Enthrall
               schedule_callback_in(delay + 1) do
                 log_injected_input  "mouse_move(#{x}, #{screen_y})"
                 $gtk.send :mouse_move, x, screen_y
-                log_injected_input "mouse_button_pressed(#{button})"
-                $gtk.send :mouse_button_pressed, button
+                log_injected_input "mouse_button_pressed(#{button_id})"
+                $gtk.send :mouse_button_pressed, button_id
               end
               # Mouse up 6 ticks later
               schedule_callback_in(delay + 7) do
-                log_injected_input "mouse_button_up(#{button})"
-                $gtk.send :mouse_button_up, button
+                log_injected_input "mouse_button_up(#{button_id})"
+                $gtk.send :mouse_button_up, button_id
               end
               {tick: current_tick}
             end
