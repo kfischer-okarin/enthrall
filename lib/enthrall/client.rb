@@ -23,7 +23,11 @@ module Enthrall
       return nil if response.body.nil? || response.body.empty?
 
       begin
+        # Ruby code evaluated inside DragonRuby is "risky" anyways so warning
+        # about this eval here doesn't really improve the situation.
+        # rubocop:disable Security/Eval
         eval(response.body)
+        # rubocop:enable Security/Eval
       rescue SyntaxError, NameError
         response.body
       end
