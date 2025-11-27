@@ -141,11 +141,11 @@ module Enthrall
             end
 
             def log_received_command(message)
-              log_info "A tremor ripples through the tadpole's nerves: #{message} (#{Kernel.global_tick_count})"
+              puts "A tremor ripples through the tadpole's nerves: #{message} (#{Kernel.global_tick_count})"
             end
 
             def log_injected_input(message)
-              log_info "The tadpole flexes its will over the host: #{message} (#{Kernel.global_tick_count})"
+              puts "The tadpole flexes its will over the host: #{message} (#{Kernel.global_tick_count})"
             end
           end
         end
